@@ -4,25 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baseball Lineup Generator</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Baseball Lineup Generator</h1>
-    <form method="post">
-        <label for="file_path">Select statistics area (batting, pitching):</label>
-        <input type="text" id="file_path" name="file_path" required><br><br>
-        <label for="year">Select year (2009 - 2024):</label>
+    <h1>Generate Baseball Lineup</h1>
+    <form action="/" method="post">
+        <label for="file_path">Select one area of statistics:</label>
+        <select id="file_path" name="file_path">
+            <option value="batting">Batting</option>
+            <option value="pitching">Pitching</option>
+        </select><br><br>
+
+        <label for="year">Select Year:</label>
         <input type="number" id="year" name="year" min="2009" max="2024" required><br><br>
-        <label for="criteria">Select criteria (comma-separated):</label>
+
+        <label for="criteria">Select Criteria (comma-separated):</label>
         <input type="text" id="criteria" name="criteria" required><br><br>
+
         <input type="submit" value="Generate Lineup">
     </form>
+
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+
     {% if lineup %}
         <h2>Generated Lineup:</h2>
-        {{ lineup | safe }}
-    {% elif error %}
-        <h2>Error:</h2>
-        <p>{{ error }}</p>
+        <table border="1">
+            <thead>
+                <tr>
+                    <!-- Adjust headers based on your data -->
+                    <th>Player</th>
+                    <th>Age</th>
+                    <th>BA</th>
+                    <!-- Add other headers as needed -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in lineup.iterrows() %}
+                    <tr>
+                        <!-- Adjust columns based on your data -->
+                        <td>{{ row.Player }}</td>
+                        <td>{{ row.Age }}</td>
+                        <td>{{ row.BA }}</td>
+                        <!-- Add other columns as needed -->
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     {% endif %}
 </body>
 </html>
