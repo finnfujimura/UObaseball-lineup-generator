@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import pandas as pd
+import os
 
 app = Flask(__name__)
 
@@ -10,14 +11,21 @@ def load_data(file_path):
     return data
 
 # Function to filter data by year and remove Totals and Opponents rows
-def filter_by_year_and_remove_totals_opponents(data, year):
+def filter_by_year_and_remove_totals_opponents(data, year):  
+    # Filter the data for the specified year
     filtered_data = data[data['Year'] == year]
+    
+    if filtered_data.empty:
+        print(f"No data available for the year {year}.")
+    
     return filtered_data
 
 # Function to generate lineup based on multiple criteria
 def generate_lineup(data, criteria_list, top_n=9):
     if not all(c in data.columns for c in criteria_list):
+        print(f"Invalid criteria. Available columns are: {data.columns.tolist()}")
         raise ValueError("One or more criteria are invalid")
+    
     sorted_data = data.sort_values(by=criteria_list, ascending=[False] * len(criteria_list))
     lineup = sorted_data.head(top_n)
     return lineup
@@ -25,19 +33,10 @@ def generate_lineup(data, criteria_list, top_n=9):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        file_path = request.form['file_path']
-        year = int(request.form['year'])
-        criteria_list = request.form['criteria'].split(',')
-
-        data = load_data(f'cleandata/{file_path}.csv')
-        data = filter_by_year_and_remove_totals_opponents(data, year)
-        try:
-            lineup = generate_lineup(data, criteria_list)
-            return render_template('index.html', lineup=lineup.to_html(classes='table'))
-        except ValueError as e:
-            return render_template('index.html', error=str(e))
-    
+        # Handle form submission here
+        pass
     return render_template('index.html')
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
