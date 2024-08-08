@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baseball Lineup Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Baseball Lineup Generator</h1>
+    <form method="post">
+        <label for="file_path">Select statistics area (batting, pitching):</label>
+        <input type="text" id="file_path" name="file_path" required><br><br>
+        <label for="year">Select year (2009 - 2024):</label>
+        <input type="number" id="year" name="year" min="2009" max="2024" required><br><br>
+        <label for="criteria">Select criteria (comma-separated):</label>
+        <input type="text" id="criteria" name="criteria" required><br><br>
+        <input type="submit" value="Generate Lineup">
+    </form>
+    {% if lineup %}
+        <h2>Generated Lineup:</h2>
+        {{ lineup | safe }}
+    {% elif error %}
+        <h2>Error:</h2>
+        <p>{{ error }}</p>
+    {% endif %}
+</body>
+</html>
