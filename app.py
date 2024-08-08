@@ -12,31 +12,49 @@ def load_data(file_path):
 
 # Function to filter data by year and remove Totals and Opponents rows
 def filter_by_year_and_remove_totals_opponents(data, year):  
-    # Filter the data for the specified year
     filtered_data = data[data['Year'] == year]
-    
-    if filtered_data.empty:
-        print(f"No data available for the year {year}.")
-    
     return filtered_data
 
 # Function to generate lineup based on multiple criteria
 def generate_lineup(data, criteria_list, top_n=9):
     if not all(c in data.columns for c in criteria_list):
-        print(f"Invalid criteria. Available columns are: {data.columns.tolist()}")
         raise ValueError("One or more criteria are invalid")
-    
     sorted_data = data.sort_values(by=criteria_list, ascending=[False] * len(criteria_list))
     lineup = sorted_data.head(top_n)
     return lineup
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    lineup = None
+    error_message = None
+
     if request.method == 'POST':
-        # Handle form submission here
-        pass
-    return render_template('index.html')
+        # Get the form data
+        file_path_key = request.form.get('file_path')
+        year = int(request.form.get('year'))
+        criteria_list = [c.strip() for c in request.form.get('criteria').split(',')]
+
+        file_dict = {
+            'batting': 'cleandata/batting.csv',
+            'pitching': 'cleandata/pitching.csv'
+        }
+
+        file_path = file_dict.get(file_path_key)
+        if not file_path:
+            error_message = "Invalid option. Please choose from 'batting' or 'pitching'."
+            return render_template('index.html', error_message=error_message)
+
+        data = load_data(file_path)
+        data = filter_by_year_and_remove_totals_opponents(data, year)
+
+        try:
+            lineup = generate_lineup(data, criteria_list)
+        except ValueError as e:
+            error_message = str(e)
+            return render_template('index.html', error_message=error_message)
+
+    return render_template('index.html', lineup=lineup, error_message=error_message)
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
