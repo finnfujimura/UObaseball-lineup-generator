@@ -26,6 +26,7 @@ def load_data(file_path):
         print(f"Error loading data: {e}")
         return pd.DataFrame()  # Return an empty DataFrame in case of error
 
+
 # Function to filter data by year and remove Totals and Opponents rows
 def filter_by_year_and_remove_totals_opponents(data, year):  
     filtered_data = data[data['Year'] == year]
@@ -69,8 +70,17 @@ def index():
             error_message = str(e)
             return render_template('index.html', error_message=error_message)
 
-    return render_template('index.html', lineup=lineup, error_message=error_message)
+    # Convert lineup DataFrame to HTML format
+    lineup_html = None
+    if lineup is not None and not lineup.empty:
+        lineup_html = lineup.to_html(classes='table table-striped', index=False)
+
+    return render_template('index.html', lineup=lineup_html, error_message=error_message)
+
+
+
+
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
+    port = int(os.getenv("PORT", 1001))
     app.run(host='0.0.0.0', port=port, debug=True)
