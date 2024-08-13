@@ -6,9 +6,25 @@ app = Flask(__name__)
 
 # Load the data
 def load_data(file_path):
-    data = pd.read_csv(file_path)
-    data = data.dropna(how='all', axis=1)  # Remove columns that are all NaN
-    return data
+    try:
+        # Load the data while considering the possibility of the first row being headers
+        data = pd.read_csv(file_path)
+        
+        # Check if the first row of data looks like column headers
+        if data.columns[0].lower() in data.iloc[0].str.lower():
+            # Re-load the data, skipping the first row as header
+            data = pd.read_csv(file_path, skiprows=1)
+            
+        data = data.dropna(how='all', axis=1)  # Remove columns that are all NaN
+        
+        # Remove any duplicated headers row (first row after the actual header)
+        if data.iloc[0].equals(pd.Series(data.columns)):
+            data = data[1:].reset_index(drop=True)
+            
+        return data
+    except Exception as e:
+        print(f"Error loading data: {e}")
+        return pd.DataFrame()  # Return an empty DataFrame in case of error
 
 # Function to filter data by year and remove Totals and Opponents rows
 def filter_by_year_and_remove_totals_opponents(data, year):  
